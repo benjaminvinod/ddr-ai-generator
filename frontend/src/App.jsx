@@ -58,6 +58,31 @@ function ReportRenderer({ text }) {
   );
 }
 
+/* ─── SECTION IMAGE MAPPING ──────────────────────────────────── */
+function MappedSectionImages({ title, images }) {
+  if (!images.length) {
+    return (
+      <div className="mapped-empty">
+        Relevant image not available.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mapped-img-grid">
+      {images.slice(0, 2).map((img, i) => (
+        <div className="mapped-img-card" key={i}>
+          <img
+            src={`http://127.0.0.1:5000/images/${img.filename}`}
+            alt={title}
+          />
+          <div className="mapped-caption">{title}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── UPLOAD CARD ────────────────────────────────────────────── */
 function UploadCard({ label, badge, icon, file, onSelect }) {
   const inputRef = useRef();
@@ -143,6 +168,7 @@ export default function App() {
       setError("Please upload both PDF documents to proceed.");
       return;
     }
+
     setLoading(true);
     setError("");
     setReport("");
@@ -158,12 +184,14 @@ export default function App() {
         method: "POST",
         body: form,
       });
+
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error || "Server returned an error.");
         return;
       }
+
       if (data.report?.startsWith("ERROR:")) {
         setError(data.report);
         return;
@@ -173,7 +201,9 @@ export default function App() {
       setImages(data.images || []);
       setMeta(data.meta || null);
     } catch {
-      setError("Cannot connect to backend. Make sure the server is running on port 5000.");
+      setError(
+        "Cannot connect to backend. Make sure the server is running on port 5000."
+      );
     } finally {
       setLoading(false);
     }
@@ -184,15 +214,16 @@ export default function App() {
     const pageW = 210;
     let y = 20;
 
-    // Header
     doc.setFillColor(11, 13, 17);
     doc.rect(0, 0, pageW, 50, "F");
     doc.setFillColor(245, 158, 11);
     doc.rect(0, 0, 4, 50, "F");
+
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.text("Detailed Diagnostic Report", 15, 22);
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(148, 163, 184);
@@ -206,12 +237,20 @@ export default function App() {
 
     for (let raw of lines) {
       let line = raw.trim();
-      if (y > 275) { doc.addPage(); y = 20; }
+      if (y > 275) {
+        doc.addPage();
+        y = 20;
+      }
+
       line = line.replace(/\*\*/g, "");
 
       const isHeading = [
-        "Property Issue Summary","Area-wise Observations","Probable Root Cause",
-        "Severity Assessment","Recommended Actions","Additional Notes",
+        "Property Issue Summary",
+        "Area-wise Observations",
+        "Probable Root Cause",
+        "Severity Assessment",
+        "Recommended Actions",
+        "Additional Notes",
         "Missing or Unclear Information",
       ].includes(line);
 
@@ -219,10 +258,12 @@ export default function App() {
         y += 6;
         doc.setFillColor(245, 158, 11);
         doc.rect(15, y, 3, 12, "F");
+
         doc.setFont("helvetica", "bold");
         doc.setFontSize(13);
         doc.setTextColor(30, 30, 30);
         doc.text(line, 22, y + 8);
+
         y += 18;
         doc.setDrawColor(230, 230, 230);
         doc.line(15, y, 195, y);
@@ -233,72 +274,119 @@ export default function App() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(70, 70, 70);
+
       const wrapped = doc.splitTextToSize(line, 175);
       doc.text(wrapped, 18, y);
       y += wrapped.length * 5.5 + 1;
     }
 
     const addImgPage = async (title, list) => {
-      if (!list.length) return;
       doc.addPage();
+
       doc.setFillColor(11, 13, 17);
       doc.rect(0, 0, 210, 30, "F");
+
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text(title, 15, 20);
-      let x = 15, yImg = 38, count = 0;
+
+      if (!list.length) {
+        doc.setTextColor(90, 90, 90);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.text("Relevant image not available.", 15, 45);
+        return;
+      }
+
+      let x = 15;
+      let yImg = 38;
+      let count = 0;
 
       for (const img of list) {
         if (yImg > 240) {
           doc.addPage();
+
           doc.setFillColor(11, 13, 17);
           doc.rect(0, 0, 210, 30, "F");
+
           doc.setTextColor(255, 255, 255);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(16);
           doc.text(title + " (cont.)", 15, 20);
-          x = 15; yImg = 38;
+
+          x = 15;
+          yImg = 38;
         }
+
         try {
-          const r = await fetch(`http://127.0.0.1:5000/images/${img.filename}`);
+          const r = await fetch(
+            `http://127.0.0.1:5000/images/${img.filename}`
+          );
           const blob = await r.blob();
+
           const dataUrl = await new Promise((res) => {
             const reader = new FileReader();
             reader.onloadend = () => res(reader.result);
             reader.readAsDataURL(blob);
           });
+
           doc.addImage(dataUrl, "PNG", x, yImg, 85, 58);
-          x += 95; count++;
-          if (count % 2 === 0) { x = 15; yImg += 68; }
+
+          x += 95;
+          count++;
+
+          if (count % 2 === 0) {
+            x = 15;
+            yImg += 68;
+          }
         } catch {}
       }
     };
 
-    await addImgPage("Inspection Images", images.filter(i => i.source === "inspection"));
-    await addImgPage("Thermal Images", images.filter(i => i.source === "thermal"));
+    await addImgPage(
+      "Inspection Images",
+      images.filter((i) => i.source === "inspection")
+    );
+
+    await addImgPage(
+      "Thermal Images",
+      images.filter((i) => i.source === "thermal")
+    );
 
     const total = doc.getNumberOfPages();
+
     for (let i = 1; i <= total; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(160);
-      doc.text(`${i} / ${total}`, 197, 290, { align: "right" });
+      doc.text(`${i} / ${total}`, 197, 290, {
+        align: "right",
+      });
     }
 
     doc.save("DDR_Report.pdf");
   };
 
-  const inspectionImages = images.filter((i) => i.source === "inspection");
-  const thermalImages = images.filter((i) => i.source === "thermal");
+  const inspectionImages = images.filter(
+    (i) => i.source === "inspection"
+  );
+
+  const thermalImages = images.filter(
+    (i) => i.source === "thermal"
+  );
+
+  const hallImgs = inspectionImages.slice(0, 2);
+  const bathImgs = inspectionImages.slice(2, 4);
+  const bedroomImgs = inspectionImages.slice(4, 6);
+  const kitchenImgs = inspectionImages.slice(6, 8);
+  const thermalMapped = thermalImages.slice(0, 2);
 
   return (
     <div className="page">
-      {/* Ambient glow orbs */}
       <div className="ambient ambient-1" />
       <div className="ambient ambient-2" />
 
-      {/* Topbar */}
       <header className="topbar">
         <div className="brand">
           <div className="brand-icon">🏢</div>
@@ -308,26 +396,29 @@ export default function App() {
       </header>
 
       <div className="container">
-        {/* Hero */}
         <div className="hero fade-up fade-up-1">
-          <div className="hero-label">Structural Diagnostics AI</div>
+          <div className="hero-label">
+            Structural Diagnostics AI
+          </div>
+
           <h1>
-            Detailed Diagnostic<br />
+            Detailed Diagnostic
+            <br />
             <em>Report Automation</em>
           </h1>
+
           <p>
-            Upload your inspection and thermal PDF documents. The AI
-            extracts observations, merges findings, and generates a
-            professional client-ready DDR in seconds.
+            Upload your inspection and thermal PDF
+            documents. The AI extracts observations,
+            merges findings, and generates a professional
+            client-ready DDR in seconds.
           </p>
         </div>
 
-        {/* Steps */}
         <div className="fade-up fade-up-2">
           <Steps step={currentStep} />
         </div>
 
-        {/* Upload */}
         <div className="upload-grid fade-up fade-up-3">
           <UploadCard
             label="Inspection Report"
@@ -336,6 +427,7 @@ export default function App() {
             file={inspection}
             onSelect={setInspection}
           />
+
           <UploadCard
             label="Thermal Report"
             badge="DOC · 02"
@@ -346,12 +438,16 @@ export default function App() {
         </div>
 
         <p className="upload-hint fade-up fade-up-3">
-          Accepts PDF format · Max recommended size 50 MB per file
+          Accepts PDF format · Max recommended size
+          50 MB per file
         </p>
 
-        {error && <div className="error-box fade-up">{error}</div>}
+        {error && (
+          <div className="error-box fade-up">
+            {error}
+          </div>
+        )}
 
-        {/* Generate Button */}
         <button
           className="primary-btn fade-up fade-up-4"
           onClick={generate}
@@ -376,23 +472,27 @@ export default function App() {
             <div className="loading-bar">
               <div className="loading-bar-inner" />
             </div>
+
             <div className="loading-status">
               EXTRACTING · MERGING · STRUCTURING…
             </div>
           </div>
         )}
 
-        {/* Meta Chips */}
         {meta && (
           <div className="meta-bar fade-up">
             <div className="meta-chip">
               <span>≈</span>
-              {meta.inspection_chars.toLocaleString()} chars from inspection
+              {meta.inspection_chars.toLocaleString()} chars
+              from inspection
             </div>
+
             <div className="meta-chip">
               <span>≈</span>
-              {meta.thermal_chars.toLocaleString()} chars from thermal
+              {meta.thermal_chars.toLocaleString()} chars
+              from thermal
             </div>
+
             <div className="meta-chip">
               <span>⬡</span>
               {meta.total_images} images extracted
@@ -400,14 +500,17 @@ export default function App() {
           </div>
         )}
 
-        {/* Report Output */}
         {report && (
           <div className="fade-up">
             <div className="divider" />
 
             <div className="section-head">
               <h2>Generated DDR Report</h2>
-              <button className="secondary-btn" onClick={exportPDF}>
+
+              <button
+                className="secondary-btn"
+                onClick={exportPDF}
+              >
                 ↓ Export PDF
               </button>
             </div>
@@ -417,67 +520,162 @@ export default function App() {
                 <div className="report-card-header-dot red" />
                 <div className="report-card-header-dot amber" />
                 <div className="report-card-header-dot green" />
+
                 <div className="report-card-title">
                   DDR_REPORT.TXT — READ ONLY
                 </div>
-                <div style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "10px",
-                  color: "var(--green-ok)",
-                  letterSpacing: "0.06em",
-                }}>
+
+                <div
+                  style={{
+                    fontFamily:
+                      "var(--font-mono)",
+                    fontSize: "10px",
+                    color:
+                      "var(--green-ok)",
+                    letterSpacing:
+                      "0.06em",
+                  }}
+                >
                   ● COMPLETE
                 </div>
               </div>
+
               <ReportRenderer text={report} />
+
+              <div className="mapped-sections">
+                <h3 className="gallery-title">
+                  Relevant Section Images
+                </h3>
+
+                <div className="mapped-block">
+                  <h4>Hall</h4>
+                  <MappedSectionImages
+                    title="Hall"
+                    images={hallImgs}
+                  />
+                </div>
+
+                <div className="mapped-block">
+                  <h4>Common Bathroom</h4>
+                  <MappedSectionImages
+                    title="Common Bathroom"
+                    images={bathImgs}
+                  />
+                </div>
+
+                <div className="mapped-block">
+                  <h4>Master Bedroom</h4>
+                  <MappedSectionImages
+                    title="Master Bedroom"
+                    images={bedroomImgs}
+                  />
+                </div>
+
+                <div className="mapped-block">
+                  <h4>Kitchen</h4>
+                  <MappedSectionImages
+                    title="Kitchen"
+                    images={kitchenImgs}
+                  />
+                </div>
+
+                <div className="mapped-block">
+                  <h4>Thermal Evidence</h4>
+                  <MappedSectionImages
+                    title="Thermal"
+                    images={thermalMapped}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Inspection Images */}
             {inspectionImages.length > 0 && (
               <>
-                <h2 className="gallery-title">Inspection Images</h2>
+                <h2 className="gallery-title">
+                  Inspection Images
+                </h2>
+
                 <div className="img-grid">
-                  {inspectionImages.map((img, i) => (
-                    <div className="img-card" key={i}>
-                      <img
-                        src={`http://127.0.0.1:5000/images/${img.filename}`}
-                        alt={`Inspection ${i + 1}`}
-                      />
-                      <div className="img-caption">
-                        INS_{String(i + 1).padStart(3, "0")}
-                        <span className="img-type">Inspection</span>
+                  {inspectionImages.map(
+                    (img, i) => (
+                      <div
+                        className="img-card"
+                        key={i}
+                      >
+                        <img
+                          src={`http://127.0.0.1:5000/images/${img.filename}`}
+                          alt={`Inspection ${i + 1}`}
+                        />
+
+                        <div className="img-caption">
+                          INS_
+                          {String(
+                            i + 1
+                          ).padStart(
+                            3,
+                            "0"
+                          )}
+
+                          <span className="img-type">
+                            Inspection
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </>
             )}
 
-            {/* Thermal Images */}
             {thermalImages.length > 0 && (
               <>
-                <h2 className="gallery-title">Thermal Images</h2>
+                <h2 className="gallery-title">
+                  Thermal Images
+                </h2>
+
                 <div className="img-grid">
-                  {thermalImages.map((img, i) => (
-                    <div className="img-card" key={i}>
-                      <img
-                        src={`http://127.0.0.1:5000/images/${img.filename}`}
-                        alt={`Thermal ${i + 1}`}
-                      />
-                      <div className="img-caption">
-                        THR_{String(i + 1).padStart(3, "0")}
-                        <span className="img-type">Thermal</span>
+                  {thermalImages.map(
+                    (img, i) => (
+                      <div
+                        className="img-card"
+                        key={i}
+                      >
+                        <img
+                          src={`http://127.0.0.1:5000/images/${img.filename}`}
+                          alt={`Thermal ${i + 1}`}
+                        />
+
+                        <div className="img-caption">
+                          THR_
+                          {String(
+                            i + 1
+                          ).padStart(
+                            3,
+                            "0"
+                          )}
+
+                          <span className="img-type">
+                            Thermal
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </>
             )}
 
-            {/* Footer strip */}
             <div className="footer-strip">
-              <span>AI DDR Generator · UrbanRoof</span>
-              <span>Generated {new Date().toLocaleDateString("en-IN")}</span>
+              <span>
+                AI DDR Generator · UrbanRoof
+              </span>
+
+              <span>
+                Generated{" "}
+                {new Date().toLocaleDateString(
+                  "en-IN"
+                )}
+              </span>
             </div>
           </div>
         )}

@@ -19,7 +19,8 @@ def extract_text_from_pdf(file_path):
 
         for line in lines:
             line = clean_line(line)
-            # Only skip truly empty or garbage lines (single chars, page numbers)
+
+            # Skip empty / garbage / tiny fragments
             if len(line) > 5:
                 cleaned.append(line)
 
@@ -29,17 +30,20 @@ def extract_text_from_pdf(file_path):
     # Deduplicate lines while preserving order
     seen = set()
     final_pages = []
+
     for page_block in pages:
         deduped = []
+
         for line in page_block.split("\n"):
             if line not in seen:
                 deduped.append(line)
                 seen.add(line)
+
         final_pages.append("\n".join(deduped))
 
     full_text = "\n\n".join(final_pages)
 
-    # Cap at ~3200 chars to stay within Ollama context window safely
+    # Cap to stay stable for Ollama context size
     return full_text[:3200]
 
 
@@ -49,6 +53,7 @@ def extract_images_from_pdf(file_path, prefix):
     os.makedirs(folder, exist_ok=True)
 
     saved = []
+    seen_sizes = set()
 
     for page_index in range(len(doc)):
         page = doc[page_index]
@@ -63,16 +68,32 @@ def extract_images_from_pdf(file_path, prefix):
                 if pix.n > 4:
                     pix = fitz.Pixmap(fitz.csRGB, pix)
 
-                # Remove tiny icons / symbols
-                if pix.width < 220 or pix.height < 180:
+                width = pix.width
+                height = pix.height
+                ratio = width / height if height else 1
+
+                # Remove tiny icons / controls / symbols
+                if width < 220 or height < 180:
                     pix = None
                     continue
 
-                # Remove square UI icons common in thermal PDFs
-                ratio = pix.width / pix.height
-                if 0.85 <= ratio <= 1.15 and pix.width < 350:
+                # Remove small square UI icons common in thermal PDFs
+                if 0.85 <= ratio <= 1.15 and width < 350:
                     pix = None
                     continue
+
+                # Remove extreme banner / strip shapes
+                if ratio > 4 or ratio < 0.25:
+                    pix = None
+                    continue
+
+                # Remove near-duplicate same-size repetitive assets
+                size_key = (width, height)
+                if size_key in seen_sizes and width < 500:
+                    pix = None
+                    continue
+
+                seen_sizes.add(size_key)
 
                 filename = f"{prefix}_p{page_index+1}_{img_index+1}.png"
                 path = os.path.join(folder, filename)
@@ -84,4 +105,5 @@ def extract_images_from_pdf(file_path, prefix):
             except:
                 continue
 
+    # Return max 10 best images to keep UI clean
     return saved[:10]

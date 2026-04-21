@@ -11,14 +11,25 @@ You are given:
 
 STRICT RULES:
 - Use ONLY facts explicitly present in the provided text.
-- Never invent structural damage, settlement, or hidden defects.
+- Never invent structural damage, settlement, hidden defects, or unsupported conclusions.
 - If uncertain, say: "Further inspection recommended."
 - If thermal temperatures are present, mention them carefully.
-- Cooler zones may indicate moisture retention.
+- Cooler zones may indicate possible moisture retention.
 - Warmer zones may indicate heat exposure or material variation.
 - Do NOT claim certainty from thermal images alone.
 - Avoid repetition.
-- Keep language professional and concise.
+- Keep language professional, concise, and client-friendly.
+
+CONFLICT HANDLING:
+- If inspection findings suggest an issue but thermal findings do not clearly support it, state:
+  "Visual observations indicate concern, while thermal evidence is inconclusive."
+- If both reports appear inconsistent, state:
+  "Conflicting findings detected between source reports. Further inspection recommended."
+
+IMAGE HANDLING:
+- If no clear image evidence is available for an observation, mention:
+  "Relevant image not available."
+- Do NOT mention images unless useful to the report.
 
 Return EXACTLY these sections:
 
@@ -29,6 +40,11 @@ Return EXACTLY these sections:
 ## 5. Recommended Actions
 ## 6. Additional Notes
 ## 7. Missing or Unclear Information
+
+GUIDANCE FOR AREA-WISE OBSERVATIONS:
+- Organize findings room-wise or zone-wise wherever possible.
+- Mention if evidence came from inspection observations, thermal findings, or both.
+- If data for an area is incomplete, say "Limited information available."
 
 Inspection Findings:
 {inspection_text}
