@@ -36,6 +36,49 @@ Preparing final reports manually is often time-consuming, repetitive, inconsiste
 
 ---
 
+## 📂 Project Structure
+
+```
+ddr-ai-generator/
+├── backend/
+│   ├── app.py
+│   ├── ai.py
+│   └── parser.py
+├── frontend/
+│   └── src/
+│       ├── App.jsx
+│       └── index.css
+├── uploads/
+├── extracted_images/
+├── architecture_diagram.png
+├── pipeline_flow_diagram.png
+└── README.md
+```
+
+---
+
+## ⚙️ How to Run Locally
+
+**1. Start Ollama**
+```bash
+ollama run llama3.1:latest
+```
+
+**2. Start Backend**
+```bash
+cd backend
+python app.py
+```
+
+**3. Start Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
 ## ✅ Solution Overview
 
 The system accepts two source documents:
@@ -243,49 +286,6 @@ Full semantic image-to-room matching would require additional AI vision infrastr
 - Client-facing dashboard
 - Cloud deployment
 - Report version history
-
----
-
-## 📂 Project Structure
-
-```
-ddr-ai-generator/
-├── backend/
-│   ├── app.py
-│   ├── ai.py
-│   └── parser.py
-├── frontend/
-│   └── src/
-│       ├── App.jsx
-│       └── index.css
-├── uploads/
-├── extracted_images/
-├── architecture_diagram.png
-├── pipeline_flow_diagram.png
-└── README.md
-```
-
----
-
-## ⚙️ How to Run Locally
-
-**1. Start Ollama**
-```bash
-ollama run llama3.1:latest
-```
-
-**2. Start Backend**
-```bash
-cd backend
-python app.py
-```
-
-**3. Start Frontend**
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 ---
 
