@@ -48,7 +48,7 @@ Generate the final DDR only.
                 "stream": False,
                 "options": {
                     "temperature": 0.1,
-                    "num_predict": 900,
+                    "num_predict": 700,
                     "top_p": 0.85
                 }
             },

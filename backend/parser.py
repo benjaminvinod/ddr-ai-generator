@@ -39,8 +39,8 @@ def extract_text_from_pdf(file_path):
 
     full_text = "\n\n".join(final_pages)
 
-    # Cap at ~6000 chars to stay within Ollama context window safely
-    return full_text[:3800]
+    # Cap at ~3200 chars to stay within Ollama context window safely
+    return full_text[:3200]
 
 
 def extract_images_from_pdf(file_path, prefix):
