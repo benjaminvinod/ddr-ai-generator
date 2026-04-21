@@ -289,7 +289,7 @@ npm run dev
 
 ---
 
-## 🎥 Demo Talking Points
+## 🎥 Demo
 
 This project demonstrates:
 
@@ -299,15 +299,4 @@ This project demonstrates:
 - Full-stack implementation
 - Real deliverable generation
 
----
 
-## 👤 Author
-
-**Benjamin Vinod**
-GitHub: [github.com/benjaminvinod](https://github.com/benjaminvinod)
-
----
-
-## ✅ Final Reflection
-
-This project was intentionally built as a usable workflow tool, not just an AI demo. It combines document parsing, AI reasoning, reliability engineering, frontend delivery, and report automation — demonstrating how AI can solve real operational business problems under realistic conditions.
