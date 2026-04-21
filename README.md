@@ -100,7 +100,7 @@ This ensured consistent output under local constraints.
 
 ## 🧱 System Architecture
 
-![System Architecture](frontend/architecture_diagram.png)
+![System Architecture](architecture_diagram.png)
 
 The solution uses a modular architecture with five distinct layers:
 
@@ -116,7 +116,7 @@ The solution uses a modular architecture with five distinct layers:
 
 ## 🔄 Pipeline Flow
 
-![Pipeline Flow](frontend/pipeline_flow_diagram.png)
+![Pipeline Flow](pipeline_flow_diagram.png)
 
 The system follows a clear eight-step processing pipeline from raw inputs to final deliverable:
 
