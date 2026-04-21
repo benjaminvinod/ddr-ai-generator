@@ -242,7 +242,18 @@ function App() {
       let yImg = 28;
       let count = 0;
 
-      for (const img of list.slice(0, 6)) {
+      for (const img of list) {
+        if (yImg > 240) {
+          doc.addPage();
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.text(title + " (cont.)", 15, 18);
+
+          x = 15;
+          yImg = 28;
+        }
+
         try {
           const url = `http://127.0.0.1:5000/images/${img.filename}`;
           const res = await fetch(url);
@@ -263,6 +274,7 @@ function App() {
             x = 15;
             yImg += 65;
           }
+
         } catch {}
       }
     };
