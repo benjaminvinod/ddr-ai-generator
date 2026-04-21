@@ -5,35 +5,53 @@ import "./index.css";
 function ReportRenderer({ text }) {
   const lines = text.split("\n");
 
+  const headings = [
+    "Property Issue Summary",
+    "Area-wise Observations",
+    "Probable Root Cause",
+    "Severity Assessment",
+    "Recommended Actions",
+    "Additional Notes",
+    "Missing or Unclear Information"
+  ];
+
   return (
     <div className="report-body">
-      {lines.map((line, i) => {
-        if (line.startsWith("## ")) {
+      {lines.map((raw, i) => {
+        let line = raw.trim();
+
+        if (!line) {
+          return <div key={i} className="report-space"></div>;
+        }
+
+        // Remove markdown **
+        line = line.replace(/\*\*/g, "");
+
+        // Section headings
+        if (headings.includes(line)) {
           return (
             <h2 key={i} className="report-h2">
-              {line.replace("## ", "")}
+              {line}
             </h2>
           );
         }
 
-        if (line.startsWith("### ")) {
+        // Numbered points
+        if (/^\d+\./.test(line)) {
           return (
-            <h3 key={i} className="report-h3">
-              {line.replace("### ", "")}
-            </h3>
+            <p key={i} className="report-p">
+              {line}
+            </p>
           );
         }
 
+        // Bullet points
         if (line.startsWith("- ") || line.startsWith("• ")) {
           return (
             <li key={i} className="report-li">
               {line.replace(/^[-•]\s/, "")}
             </li>
           );
-        }
-
-        if (line.trim() === "" || line.trim() === "---") {
-          return <div key={i} className="report-space"></div>;
         }
 
         return (
