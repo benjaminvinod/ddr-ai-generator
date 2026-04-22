@@ -5,38 +5,38 @@
 
 ---
 
-## 📌 Executive Summary
+## Executive Summary
 
 AI DDR Generator is an end-to-end AI application that converts raw **Inspection Reports** and **Thermal Reports** into a professional, structured **Detailed Diagnostic Report (DDR)**.
 
-Instead of manually reviewing technical site reports and preparing client deliverables, the system automates the workflow by:
+Instead of manually reviewing technical site reports and preparing client deliverables, the system automates the full workflow:
 
-- Reading two independent source reports
-- Extracting textual findings and embedded images
-- Merging observations logically
-- Handling missing / conflicting data
-- Generating a client-ready DDR
-- Exporting a polished PDF report
+- Reads two independent source reports
+- Extracts textual findings and embedded images
+- Merges observations logically
+- Handles missing or conflicting data
+- Generates a client-ready DDR
+- Exports a polished PDF report
 
 This project demonstrates applied AI beyond prompting — combining document intelligence, local LLM orchestration, workflow automation, report generation, and engineering tradeoffs under real constraints.
 
 ---
 
-## 🎯 Why This Problem Matters
+## Why This Problem Matters
 
-In civil diagnostics, waterproofing inspections, structural maintenance, and property audits, engineers often work with fragmented inputs such as:
+In civil diagnostics, waterproofing inspections, structural maintenance, and property audits, engineers work with fragmented inputs:
 
 - Visual inspection notes
-- Dampness / seepage findings
+- Dampness and seepage findings
 - Thermal camera reports
 - Temperature observations
 - Site photographs
 
-Preparing final reports manually is often time-consuming, repetitive, inconsistent between engineers, difficult to scale, and error-prone when handling multiple observations. This project automates that process into a repeatable workflow.
+Preparing final reports manually is time-consuming, repetitive, inconsistent between engineers, difficult to scale, and error-prone. This project automates that process into a repeatable workflow.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ddr-ai-generator/
@@ -50,42 +50,116 @@ ddr-ai-generator/
 │       └── index.css
 ├── uploads/
 ├── extracted_images/
-├── architecture_diagram.png
-├── pipeline_flow_diagram.png
+├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## ⚙️ How to Run Locally
+## Prerequisites
 
-**1. Start Ollama**
+Ensure the following are installed before running:
+
+- Python 3.10+
+- Node.js 18+
+- npm
+- Git
+- [Ollama](https://ollama.com) installed locally
+
+Pull the required model:
+
+```bash
+ollama pull llama3.1:latest
+```
+
+**Recommended machine:** 8GB+ RAM, SSD storage, Windows / macOS / Linux
+
+---
+
+## How to Run Locally
+
+The project runs across **3 separate terminals**.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/benjaminvinod/ddr-ai-generator.git
+cd ddr-ai-generator
+```
+
+### 2. Create a Python virtual environment
+
+```bash
+python -m venv .venv
+```
+
+Activate it:
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# macOS / Linux
+source .venv/bin/activate
+```
+
+### 3. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start Ollama — Terminal 1
+
 ```bash
 ollama run llama3.1:latest
 ```
 
-**2. Start Backend**
+Keep this terminal running in the background.
+
+### 5. Start the Flask backend — Terminal 2
+
 ```bash
 cd backend
 python app.py
 ```
 
-**3. Start Frontend**
+Runs on `http://127.0.0.1:5000`
+
+### 6. Start the React frontend — Terminal 3
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
+Runs on `http://localhost:5173`
+
+### 7. Open in browser
+
+Visit `http://localhost:5173`, upload both PDFs, and generate the DDR.
+
 ---
 
-## ✅ Solution Overview
+## Troubleshooting
 
-The system accepts two source documents:
+| Issue | Fix |
+|---|---|
+| Ollama not responding | Ensure the Ollama desktop app or service is running |
+| Model missing | Run `ollama pull llama3.1:latest` |
+| Port already in use | Close previous Flask / Vite sessions and restart terminals |
+| Python package issues | Delete `.venv`, recreate it, and reinstall dependencies |
+
+---
+
+## Solution Overview
+
+The system accepts two input documents and produces one structured output.
 
 **Input 1 — Inspection Report PDF**
 - Area-wise observations
-- Cracks / dampness / seepage notes
+- Cracks, dampness, seepage notes
 - Visible defects
 - Embedded photographs
 
@@ -93,11 +167,9 @@ The system accepts two source documents:
 - Temperature readings
 - Thermal anomalies
 - Infrared imagery
-- Moisture / heat indicators
+- Moisture and heat indicators
 
-**Final Output — Detailed Diagnostic Report**
-
-The AI system generates a structured DDR containing:
+**Output — Detailed Diagnostic Report**
 
 1. Property Issue Summary
 2. Area-wise Observations
@@ -105,76 +177,134 @@ The AI system generates a structured DDR containing:
 4. Severity Assessment (with reasoning)
 5. Recommended Actions
 6. Additional Notes
-7. Missing / Unclear Information
+7. Missing or Unclear Information
 
-The report can also be exported as a professional PDF with supporting images.
-
----
-
-## 🧠 AI Layer
-
-**Model Used:** `llama3.1:latest`, served locally via [Ollama](https://ollama.com)
-
-**Why a Local LLM?**
-
-This project was completed without paid cloud API access. Using a local model enabled:
-
-- Zero API cost
-- Offline execution
-- Privacy of uploaded reports
-- Faster development iteration
-- Demonstration of self-hosted AI workflows
-
-**⚠️ Real Engineering Constraint Solved**
-
-Running the model on consumer hardware introduced practical limits — large prompts or excessive extracted text can lead to slow inference, high memory usage, internal server errors, and response throttling.
-
-**Mitigations implemented:**
-
-- Text cleanup and duplicate removal
-- Safe character limits on input
-- Compact prompting strategy
-- Controlled token generation
-- Stable inference settings
-
-This ensured consistent output under local constraints.
+The report can be exported as a PDF with supporting images.
 
 ---
 
-## 🧱 System Architecture
+## AI Layer
+
+**Model:** `llama3.1:latest` served locally via Ollama
+
+**Why a local LLM?**
+
+This project was built without paid cloud API access. Running locally enabled zero API cost, offline execution, privacy of uploaded reports, and faster development iteration — while demonstrating self-hosted AI workflow design.
+
+**Constraint handling on consumer hardware:**
+
+| Problem | Mitigation |
+|---|---|
+| Slow inference on large prompts | Safe character limits on input |
+| Memory pressure | Text cleanup and duplicate removal |
+| Inconsistent output | Controlled token generation + low temperature |
+
+---
+
+## System Architecture
 
 ![System Architecture](architecture_diagram.png)
 
-The solution uses a modular architecture with five distinct layers:
-
 | Layer | Responsibility |
 |---|---|
-| **React Frontend** | File uploads, previews, report viewing, PDF export |
-| **Flask Backend** | API management and processing orchestration |
-| **Parser Layer** | Text and image extraction from PDFs |
-| **AI Layer** | DDR generation via Ollama + Llama 3.1 |
-| **Output Layer** | Structured report delivery with mapped evidence images |
+| React Frontend | File uploads, report viewing, PDF export |
+| Flask Backend | API management and processing orchestration |
+| Parser Layer | Text and image extraction from PDFs |
+| AI Layer | DDR generation via Ollama + Llama 3.1 |
+| Output Layer | Structured report delivery with evidence images |
 
 ---
 
-## 🔄 Pipeline Flow
+## Pipeline Flow
 
 ![Pipeline Flow](pipeline_flow_diagram.png)
 
-The system follows a clear eight-step processing pipeline from raw inputs to final deliverable:
-
 1. User uploads both PDFs via the frontend
-2. Backend receives and parses the uploaded content
-3. Text is extracted page-wise from each document
+2. Backend receives and validates uploaded files
+3. Text is extracted page-wise from each report
 4. Images are extracted and filtered for relevance
-5. Data is cleaned and prepared for the prompt
-6. A structured prompt is generated and sent to the LLM
-7. AI returns the structured DDR sections
-8. Frontend renders the report; user exports as a polished PDF
+5. Data is cleaned and prepared for prompting
+6. Prompt is constructed and sent to the LLM
+7. AI returns structured DDR sections
+8. Frontend renders the report and user exports a PDF
 
 ---
 
-## 🛠️ Tech Stack
+## Core Engineering Components
+
+### 1. Document Parsing Engine
+
+Extracts readable text from uploaded PDFs using page-wise extraction, whitespace cleanup, duplicate line removal, and safe context truncation for LLM stability.
+
+### 2. Image Extraction Pipeline
+
+Extracts relevant embedded images from both reports. Filters out tiny icons, decorative graphics, duplicate assets, and UI overlays. Only useful evidence images are retained.
+
+### 3. AI Report Generation Engine
+
+The structured prompt instructs the model to:
+
+- Use only facts present in the source documents
+- Avoid hallucinated claims
+- Flag conflicting information between documents
+- Explicitly mention missing data as "Not Available"
+- Return all required DDR sections in consistent format
+
+### 4. Reliability Controls
+
+Conservative inference settings and controlled output length ensure stable behaviour on local hardware. Fallback language (`Not Available`, `Conflicting findings detected`, `Further inspection recommended`) is used when data is absent.
+
+### 5. Report Delivery Layer
+
+Users receive two output formats:
+- **On-screen report** — structured DDR rendered in the browser
+- **Downloadable PDF** — styled sections with findings and supporting images
+
+---
+
+## Image Placement Logic
+
+Images are mapped to relevant report sections using a deterministic heuristic:
+
+- Hall observations → hall images
+- Bathroom findings → bathroom images
+- Thermal evidence → thermal image blocks
+
+If an expected image is unavailable, the section notes: *"Relevant image not available."*
+
+---
+
+## Validation & Testing
+
+| Scenario | Status |
+|---|---|
+| Dual PDF upload | ✅ Tested |
+| Missing file handling | ✅ Tested |
+| AI generation success | ✅ Tested |
+| Large input stability | ✅ Tested |
+| Image extraction correctness | ✅ Tested |
+| PDF export correctness | ✅ Tested |
+| Backend connectivity handling | ✅ Tested |
+
+---
+
+## Design Decisions & Tradeoffs
+
+**Why not OCR?**
+The provided reports are machine-readable PDFs, so direct parsing is faster and more accurate. OCR would be added in production for scanned documents.
+
+**Why not GPT or Claude APIs?**
+Local LLM usage demonstrates stronger engineering ownership under zero-budget constraints.
+
+**Why character limits on input?**
+To keep inference stable and predictable on consumer-grade hardware.
+
+**Why heuristic image mapping?**
+Full semantic image-to-room matching requires additional AI vision infrastructure. For a 24-hour assignment, a deterministic mapping approach was the right tradeoff.
+
+---
+
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -184,96 +314,11 @@ The system follows a clear eight-step processing pipeline from raw inputs to fin
 
 ---
 
-## 🔍 Core Engineering Components
-
-### 1. Document Parsing Engine
-
-Extracts readable text from uploaded PDFs with:
-
-- Page-wise extraction
-- Whitespace cleanup
-- Duplicate line removal
-- Safe context truncation for LLM input quality
-
-### 2. Image Extraction Pipeline
-
-Extracts relevant embedded images from both source reports. Filters out tiny icons, decorative graphics, duplicate assets, UI overlays, and unrelated shapes — retaining only useful evidence images.
-
-### 3. AI Report Generation Engine
-
-The structured prompt instructs the model to:
-
-- Use only facts present in the source documents
-- Avoid invented or hallucinated claims
-- Explicitly flag conflicting information
-- Clearly note missing data
-- Use client-friendly language
-- Return all required DDR sections
-
-### 4. Reliability Controls
-
-The application prioritizes stable real-world behavior through conservative inference settings, controlled output length, and truncated input size. Fallback wording includes:
-
-- `Further inspection recommended`
-- `Not Available`
-- `Conflicting findings detected`
-
-### 5. Report Delivery Layer
-
-Users receive two output formats:
-
-- **On-Screen Report** — readable structured DDR rendered in the browser
-- **Downloadable PDF** — includes cover page, styled sections, full findings, source images, and page numbering
-
----
-
-## 🖼️ Image Placement Logic
-
-Images are mapped to their relevant report sections using a deterministic heuristic approach:
-
-- Hall observations → related hall images
-- Bathroom findings → related bathroom images
-- Thermal evidence → thermal image blocks
-
-Where a relevant image is unavailable, the section notes: `Relevant image not available`.
-
----
-
-## 🧪 Validation & Testing
-
-The system was tested using provided sample reports across the following scenarios:
-
-- ✅ Successful dual PDF upload
-- ✅ Missing file handling
-- ✅ AI generation success
-- ✅ Large input stability
-- ✅ Image extraction correctness
-- ✅ PDF export correctness
-- ✅ Backend connectivity handling
-
----
-
-## 📈 Design Decisions & Tradeoffs
-
-**Why not OCR?**
-The provided files were machine-readable PDFs, so direct parsing was faster and more accurate. OCR would be added for scanned reports in a production build.
-
-**Why not GPT / Claude APIs?**
-Local LLM usage demonstrated stronger engineering ownership under zero-budget constraints.
-
-**Why character limits on input?**
-To keep inference stable and predictable on consumer-grade local hardware.
-
-**Why heuristic image mapping?**
-Full semantic image-to-room matching would require additional AI vision infrastructure. For a 24-hour assignment, a practical deterministic mapping approach was the right tradeoff.
-
----
-
-## 🚀 Future Improvements
+## Future Improvements
 
 **AI**
 - Better thermal anomaly reasoning
-- Human review / correction mode
+- Human review and correction mode
 - Fine-tuned domain-specific model
 
 **Document Intelligence**
@@ -289,14 +334,6 @@ Full semantic image-to-room matching would require additional AI vision infrastr
 
 ---
 
-## 🎥 Demo
+## Google Drive Link
 
-This project demonstrates:
-
-- Applied AI system design
-- Workflow automation thinking
-- Practical constraint handling
-- Full-stack implementation
-- Real deliverable generation
-
-
+https://drive.google.com/drive/folders/1ef5U20ZWAEkUSrlzS0rzcNqncO_fX3S6?usp=sharing
