@@ -20,6 +20,10 @@ function ReportRenderer({ text }) {
     <div className="report-body">
       {lines.map((raw, i) => {
         let line = raw.trim();
+
+        line = line.replace(/^##\s*/, "");
+        line = line.replace(/^###\s*/, "");
+        line = line.replace(/^#\s*/, "");
         if (!line) return <div key={i} className="report-space" />;
 
         line = line.replace(/\*\*/g, "");
@@ -237,6 +241,11 @@ export default function App() {
 
     for (let raw of lines) {
       let line = raw.trim();
+
+      line = line.replace(/^##\s*/, "");
+      line = line.replace(/^###\s*/, "");
+      line = line.replace(/^#\s*/, "");
+
       if (y > 275) {
         doc.addPage();
         y = 20;
